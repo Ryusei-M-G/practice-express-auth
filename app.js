@@ -25,6 +25,7 @@ app.use(session({
   },
 }));
 
+//ログイン処理
 app.post('/login', async (req, res) => {
   const { username, password } = req.body;
 
@@ -45,7 +46,7 @@ app.post('/login', async (req, res) => {
   }
 });
 
-
+//ログイン情報
 app.get('/', (req, res) => {
   if (req.session.user) {
     res.json({ message: `Logged in as ${req.session.user.username}` });
@@ -54,6 +55,7 @@ app.get('/', (req, res) => {
   }
 });
 
+//登録処理
 app.post('/register', async (req, res) => {
   const { username, password } = req.body;
   if (!username || !password) {
@@ -73,6 +75,19 @@ app.post('/register', async (req, res) => {
   }
 }
 )
+
+//ログアウト処理
+app.post('/logout', (req, res) => {
+  if (req.session.user) {
+    req.session.destroy((err) => {
+      if (err) {
+        return res.status(500).json({ message: 'logout failed' });
+      }
+      return res.status(200).json({ message: 'logout successful' })
+    })
+  }
+  else { res.status(400).json({ message: 'No active session' }); }
+});
 
 
 app.listen(port, () => {
