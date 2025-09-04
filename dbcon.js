@@ -12,13 +12,13 @@ const pool = new pg.Pool({
 });
 
 
-async function addUser(username, password) {
+const addUser = async (username, password) => {
   const client = await pool.connect();
   try {
     // パラメータ化クエリを使用してSQLインジェクションを防ぐ
     const query = 'INSERT INTO users (username, password) VALUES ($1, $2) RETURNING id';
     const values = [username, password];
-    
+
     const res = await client.query(query, values);
     console.log(`User ${username} added with id: ${res.rows[0].id}`);
     return res.rows[0];
@@ -29,7 +29,21 @@ async function addUser(username, password) {
     // プールにクライアントを返却
     client.release();
   }
+
 }
 
+const getUserByUsername = async (username) => {
+  const client = await pool.connect();
+  try {
+    const query = 'SELECT * FROM users WHERE username = $1';
+    const result = await client.query(query, [username]);
+    return result.rows[0];
+  } catch (err) {
+    console.error(err);
+    throw err;
+  } finally {
+    client.release();
+  }
+}
 // 他のファイルから pool や addUser を使えるようにエクスポート
-export { pool, addUser };
+export { pool, addUser, getUserByUsername };
