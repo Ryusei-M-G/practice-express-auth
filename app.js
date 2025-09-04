@@ -2,6 +2,8 @@ import express from 'express'
 import session from 'express-session';
 import dotenv from 'dotenv'
 import cors from 'cors'
+import bcrypt from 'bcrypt'
+
 import { addUser, getUserByUsername } from './dbcon.js';
 
 dotenv.config();
@@ -31,7 +33,7 @@ app.post('/login', async (req, res) => {
 
   try {
     const user = await getUserByUsername(username);
-    if (user && user.password === password) {
+    if (user && await bcrypt.compare(password, user.password)) {
       req.session.user = {
         username: username
       };

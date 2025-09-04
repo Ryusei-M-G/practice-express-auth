@@ -1,5 +1,6 @@
 import pg from 'pg';
 import dotenv from 'dotenv';
+import bcrypt from 'bcrypt'
 
 dotenv.config();
 
@@ -13,11 +14,13 @@ const pool = new pg.Pool({
 
 
 const addUser = async (username, password) => {
+  const saltRounds = 10;
+  const hashedPassword = await bcrypt.hash(password,saltRounds);
   const client = await pool.connect();
   try {
     // パラメータ化クエリを使用してSQLインジェクションを防ぐ
     const query = 'INSERT INTO users (username, password) VALUES ($1, $2) RETURNING id';
-    const values = [username, password];
+    const values = [username, hashedPassword];
 
     const res = await client.query(query, values);
     console.log(`User ${username} added with id: ${res.rows[0].id}`);
