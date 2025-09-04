@@ -54,7 +54,7 @@ app.post('/register', async (req, res) => {
   try {
     await addUser(username, password);
     res.status(201).json({
-      message: 'registerd'
+      message: 'registered'
     })
   } catch (err) {
     if (err.code === '23505') {
