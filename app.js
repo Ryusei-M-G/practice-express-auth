@@ -9,28 +9,43 @@ const app = express();
 
 const port = 3000;
 
+app.use(express.json());
 app.use(cors());
+
+
 app.use(session({
-  secret: process.env.SESSION_SECRET || 'default_secret_key',//セッションIDの署名に使う秘密鍵
-  resave: false,//変更がない限り保存しない
-  saveUninitialized: true,//未初期化セッションの保存
+  secret: process.env.SESSION_SECRET || 'default_secret_key',
+  resave: false,
+  saveUninitialized: false, 
   cookie: {
-    httpOnly: true,//JSからアクセス不可
-    secure: false, //httpsか
-    maxAge: 1000 * 60 * 30, //ミリセコンド表記 30Min
+    httpOnly: true,
+    secure: false,
+    maxAge: 1000 * 60 * 60, 
   },
 }));
 
-app.get('/', (req, res) => {
-  if (req.session.views) {
-    req.session.views++;
-    res.setHeader('Content-Type', 'text/html');
-    res.send(`<p>Views: ${req.session.views}</p>`);
+app.post('/login', (req, res) => {
+  const { username, password } = req.body;
+
+  if (username === 'admin' && password === 'password') {
+    // req.sessionに情報を保存することで、セッションが開始される
+    req.session.user = { username: username };
+    
+    res.status(200).json({ message: 'Login successful' });
   } else {
-    req.session.views = 1;
-    res.send('Welcome to the session demo. Refresh page!');
+    res.status(401).json({ message: 'Invalid credentials' });
   }
 });
+
+
+app.get('/', (req, res) => {
+  if (req.session.user) {
+    res.json({ message: `Logged in as ${req.session.user.username}` });
+  } else {
+    res.json({ message: 'You are not logged in' });
+  }
+});
+
 
 app.listen(port, () => {
   console.log(`Example app listening at http://localhost:${port}`);
